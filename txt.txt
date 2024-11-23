@@ -1,0 +1,10 @@
+<h1 class="text-3xl font-bold text-blue-600">Map of Batam</h1>
+            <hr class="my-4 bg-indigo-500">
+
+            <!-- Map Container -->
+            <div class="relative w-full h-[500px] bg-gray-300 rounded-lg overflow-hidden">
+                <iframe
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=104.05365824794772%2C1.0332870875102288%2C104.29594552993772%2C1.2300629390133086&amp;layer=mapnik"
+                    width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen></iframe>
+                <a href="https://www.openstreetmap.org/#map=12/1.1279/104.0508">View Larger Map</a>
+            </div>
