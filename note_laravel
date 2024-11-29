@@ -1,0 +1,106 @@
+laravel
+laravel_docker/
+├── docker-compose.yml
+├── Dockerfile
+├── nginx/
+│   └── default.conf
+└── laravel-app/
+    ├── app/
+    ├── bootstrap/
+    ├── config/
+    ├── database/
+    ├── public/
+    ├── resources/
+    ├── routes/
+    ├── storage/
+    ├── tests/
+    ├── .env
+    ├── artisan
+    ├── composer.json
+    ├── composer.lock
+    └── vendor/
+    
+Dockerfile:
+# Menggunakan image PHP sebagai dasar
+FROM php:8.1-fpm
+
+# Instal dependensi
+RUN apt-get update && apt-get install -y libzip-dev libpng-dev \
+    && docker-php-ext-install zip gd
+
+# Set working directory
+WORKDIR /var/www
+
+# Salin Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Salin file aplikasi Laravel ke container
+COPY ./laravel-app /var/www
+
+# Instal dependensi Laravel
+RUN composer install
+
+# Ekspose port untuk PHP-FPM
+EXPOSE 9000
+
+CMD ["php-fpm"]
+
+default.conf:
+server {
+    listen 80;
+    server_name localhost;
+
+    root /var/www/public;
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass laravel:9000;  # Nama service untuk PHP container
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+
+docker-compose.yml:
+version: '3.8'
+
+services:
+  laravel:
+    build: .
+    volumes:
+      - ./laravel-app:/var/www
+    expose:
+      - "9000"
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./laravel-app:/var/www
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "8081:80"  # Ganti port sesuai kebutuhan
+    depends_on:
+      - laravel
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+
+
+---------------------- kalo masih ga bisa------------------
+docker-compose exec laravel bash
+ls -ld storage storage/logs
+chmod -R 775 storage
+chmod -R 775 storage/logs
+chown -R www-data:www-data storage
+php artisan config:cache
+php artisan cache:clear
